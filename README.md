@@ -20,14 +20,14 @@ Custom decorator for multiple permissions, which will check for all permissions 
   
      1 - simple views
      
-        @permission_set_required(perm=['app.add_app', 'app.change_app'], perm   _check='AND')
+        @permission_set_required(perm=['app.add_app', 'app.change_app'], perm_check='AND')
         def view(request):
             pass
                
      2 - Class based Views
             
         class MyView(View):
-            @method_decorator(permission_set_required(perm=['app.add_app', 'app.change_app'], p   erm   _check='AND'))
+            @method_decorator(permission_set_required(perm=['app.add_app', 'app.change_app'], perm_check='AND'))
             def get(request):
                 pass
             
