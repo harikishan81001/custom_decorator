@@ -3,6 +3,13 @@
     Custom decorator for multiple permissions, which will check for all permissions and allow user if he passes test.
 
     
+#Allowed Operations 
+
+    ALLOWED_CHECK = ['AND', 'OR', 'NOT']
+    1- AND - check for all, user must have all those permissions
+    2- OR - Passes if user has any of thease permissions 
+    3- NOT - if user has any of mentioned permissions, access will be restricted. 
+
 #User manual
   
   1- download application.
