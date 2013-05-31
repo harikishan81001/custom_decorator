@@ -9,11 +9,12 @@ from exceptions import Exception
 class NotValidCheck(Exception):
     pass
 
-ALLOWED_CHECK = ['OR', 'AND']
+ALLOWED_CHECK = ['OR', 'AND', 'NOT']
+
 
 def permission_set_required(
         perm, perm_check='OR',
-        login_url=None, raise_exception=False ):
+        login_url=None, raise_exception=False):
     """
     decorator for the views that check whether a user has
     a particular set of permissions based on perm_check like
@@ -21,6 +22,8 @@ def permission_set_required(
          User must have a single permission from the set of permission
      2 - if perm_check == 'AND'
         User must have all permissions from the set to pass decorator
+     3 - if perm_check == 'NOT'
+            then user must not have mentioned permission
     if raise_exception is given then PermissionDenied exception will be
       raised.
     """
@@ -29,16 +32,32 @@ def permission_set_required(
         if perm_check not in ALLOWED_CHECK:
             raise NotValidCheck(
                 'perm_check is not valid expected is "AND", '
-                ' "OR" but found %s' % perm_check)
-        if not isinstance(perm, list):
-            return permission_required(
-                perm, login_url=login_url,
-                raise_exception=raise_exception)
+                ' "OR", "NOT" but found %s' % perm_check)
+        if not perm_check == 'NOT':
+            if not isinstance(perm, list):
+                return permission_required(
+                    perm, login_url=login_url,
+                    raise_exception=raise_exception)
+            else:
+                if perm_check == 'OR':
+                    return check_or_perms(user, perm)
+                elif perm_check == 'AND':
+                    return check_and_perms(user, perm)
         else:
-            if perm_check=='OR':
-                return check_or_perms(user, perm)
-            elif perm_check=='AND':
-                return check_and_perms(user, perm)
+            return check_not_perms(user, perm)
+
+    def check_not_perms(user, perm):
+        flag = True
+        if not isinstance(perm, list):
+            if user.has_perm(perm):
+                flag = False
+            else:
+                for each in perm:
+                    if user.has_perm(each):
+                        flag = False
+                    else:
+                        flag = True
+        return flag                        
 
     def check_or_perms(user, perm_list):
         flag = False
@@ -50,7 +69,6 @@ def permission_set_required(
         if raise_exception:
             raise PermissionDenied
         return flag
-
 
     def check_and_perms(user, perm_list):
         flag = False
@@ -65,6 +83,4 @@ def permission_set_required(
             raise PermissionDenied
         return flag
 
-    return user_passes_test(check_perms, login_url = login_url)
-
-
+    return user_passes_test(check_perms, login_url=login_url)
